@@ -15,7 +15,6 @@ const admincol = db.collection("admin")
 
  function authenticateAdmin(req, res, next) {
   const token = req.cookies.AdminToken; // Assuming you store the token in a cookie
-  console.log("token here ahha",token)
   if (token) {
     // Verify and decode the token here (use your actual logic)
     // For example, you can use the 'jsonwebtoken' library
@@ -105,34 +104,11 @@ router.post("/login", async (req, res) => {
  })
 
   router.get("/getToken",(req,res)=>{
-    console.log(req.cookies.AdminToken)
+    console.log(req.cookies.Token)
     
 
    try {
-    if(req?.cookies?.AdminToken){
-      const decodedData = jwt.verify(req.cookies.AdminToken, SECRET);
-
-      if (decodedData.exp > Date.now()) {
-        // If the token is valid, set the user data in the request object
-        res.cookie('AdminToken', '', {
-            maxAge: 1,
-            httpOnly: true,
-          })
-        
-      }else{
-        req.body.decodedData = decodedData;
-        res.send({
-          data:{
-  
-          name:decodedData.name,
-          email:decodedData.email,
-          _id:decodedData._id,
-          isAdmin:decodedData.isAdmin
-        }
-        })
-        return
-      }
-    }else if(req?.cookies?.Token){
+    if(req?.cookies?.Token){
       const decodedData = jwt.verify(req.cookies.Token, SECRET);
       if (decodedData.exp > Date.now()) {
         // If the token is valid, set the user data in the request object
@@ -142,15 +118,9 @@ router.post("/login", async (req, res) => {
           })
         
       }else{
-        res.send({
-          data:{
-  
-          name:decodedData.name,
-          email:decodedData.email,
-          _id:decodedData._id,
-          isAdmin:decodedData.isAdmin
-        }
-        })
+        res.send(
+         decodedData
+        )
       }
      
     }else{

@@ -8,11 +8,8 @@ export const reducer = (state, action) => {
            action.payload?.email
         ) {
   
-          const role = (action.payload?.isAdmin) ? "admin" : "user";
-          const user = {
-            email: action.payload?.email,
-            _id: action.payload?._id
-          }
+          const role = action.payload?.role;
+          const user = action.payload
   
           return { ...state, isLogin: true, role: role, user: user }
         }

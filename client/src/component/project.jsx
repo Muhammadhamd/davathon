@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import app from '../firebaseConfig.mjs'
 import {  getStorage, ref, uploadBytes , getDownloadURL  } from "firebase/storage";
 import axios from 'axios';
-import ProductPost from './LatestPost';
+import DoctorCard from './post';
 import SubmitBtn from './submitbtn';
 import { useNavigate, useLocation } from 'react-router-dom';
 import LoadingComponent from './Loading';
 import Navcomponent from './navbar';
 
-function Store(){
+function Doctors(){
 const [searchInput , setSearchInput] = useState("")
 const [isloading , setisloading] = useState(false)
 const [islogin , setislogin] = useState(false)
@@ -19,6 +19,9 @@ const navigate = useNavigate();
 const location = useLocation();
 const womentag = useRef([]);
 const mentag = useRef([]);
+
+const [dataarray , setdataarray] = useState([])
+const [rerender , setrerender] = useState(false)
 const childrentag = useRef([]);
 const SearchHandler = (e) => {
   e.preventDefault();
@@ -26,8 +29,8 @@ const SearchHandler = (e) => {
   setisloading(true)
 
   const encodedSearchInput = encodeURIComponent(searchInput);
-  navigate(`/store?s=${encodedSearchInput}`);
-  axios.get(`/posts?s=${searchInput}`)
+  navigate(`/Doctors?s=${encodedSearchInput}`);
+  axios.get(`/doctors?s=${searchInput}`)
     .then((res) => {
       setProducts(res.data);
       console.log(res.data)
@@ -44,23 +47,23 @@ const SearchHandler = (e) => {
 
     })
 }
+const doctordata = async()=>{
 
-const userLoginCheckHandler = async() =>{
 
   try {
-    const res = await axios.get("/currentuser",{
-      withCredentials: true,
-    })
-    setislogin(true)
-    console.log(res)
-    setuserdata(res.data)
+  const res = await  axios.get("http://localhost:2344/doctors")
+  setdataarray(res.data)
+  setrerender(true)
+  console.log(res.data)
   } catch (error) {
     console.log(error)
-    setislogin(false)
   }
 }
-
-
+  
+useEffect(()=>{
+  doctordata()
+}, [rerender])
+  
 const searchQuery = new URLSearchParams(location.search).get('s');
 
 useEffect(()=>{
@@ -68,7 +71,7 @@ useEffect(()=>{
   setSearchInput(searchQuery || '')
   
   setisloading(true)
-axios.get(`/posts?s=${searchQuery || ""}`)
+axios.get(`/doctors?s=${searchQuery || ""}`)
 .then((res)=>{
   console.log(res.data)
   setProducts(res.data)
@@ -83,20 +86,18 @@ axios.get(`/posts?s=${searchQuery || ""}`)
 
 })
 },[])
-useEffect(()=>{
-  userLoginCheckHandler()
-},[islogin])
-
-useEffect(()=>{
-  const mentags = products.filter((product)=>product.tag === 'Men').map((product)=>product.tag)
-  const womentags = products.filter((product)=>product.tag === 'Women').map((product)=>product.tag)
-  const childrentags = products.filter((product)=>product.tag === 'children').map((product)=>product.tag)
 
 
-  mentag.current = mentags
-  womentag.current = womentags
-  childrentag.current = childrentags
-},[SearchHandler])
+// useEffect(()=>{
+//   const mentags = products.filter((product)=>product.tag === 'Men').map((product)=>product.tag)
+//   const womentags = products.filter((product)=>product.tag === 'Women').map((product)=>product.tag)
+//   const childrentags = products.filter((product)=>product.tag === 'children').map((product)=>product.tag)
+
+
+//   mentag.current = mentags
+//   womentag.current = womentags
+//   childrentag.current = childrentags
+// },[SearchHandler])
 
 
     return(
@@ -104,51 +105,39 @@ useEffect(()=>{
      <>
      
 
-      <div className='bg-[#f5f7f9] max-[600px]:flex-col px-[30px] flex justify-around '>
+      <div className='bg-[#f5f7f9] flex flex-col items-center'>
 
         
-        <div className='pt-[100px] bg-white max-w-[1000px] w-[95%] px-[5%] flex flex-col items-center ' >
-         <div className=' px-[13px] w-full flex  justify-start pb-[2em]'>
-          <h1 className='text-[#777] '>{searchQuery || searchInput ? (`Home/Store/ ${searchQuery}`) :'Home/Store'}</h1>
-         </div>
-         <div className='pb-[2em] px-[13px] flex w-full justify-between'>
-          <h1 className='text-xl'>Showing 1-{products.length || 0} of {products.length ||0} result</h1>
-          <select name="" id="" className='outline-none px-3 py-2 w-[200px] text-slate-500'>
-            <option className='px-3 py-2' value="">Default sorting</option>
-            <option className='px-3 py-2' value="">sort by name</option>
-            <option className='px-3 py-2' value="">Default sorting</option>
-            <option className='px-3 py-2' value="">Default sorting</option>
-          </select>
-         </div>
+       <div className='my-[40px] w-full flex justify-center'>
+       <form onSubmit={SearchHandler} className='bg-[#FFFFFF] max-w-[500px] w-full p-[10px] rounded-[20px]'>
+          <button><i className='fa fa-search'></i></button>
+          <input 
+        onChange={(e)=>{
+  setSearchInput(e.target.value)
+        }}
+        type="text" value={searchInput}  className='bg-transparent px-[10px] py-[6px] w-[90%] outline-none' placeholder='Search Doctor...' />
+        </form>
+       </div>
          
-         <div className='flex flex-wrap justify-center gap-[20px]'>
+         <div className='flex flex-col gap-[20px] w-full items-center'>
 
           {
-           isloading? (<LoadingComponent isLoading={isloading} />)         
+           isloading? (<LoadingComponent isLoading={false} />)         
           :
-         (          
-              <div className='md:w-[300px] h-[225px] bg-black p-[10px]'>
-                <div className='w-full overflow-hidden rounded-lg'>
-                  <img className='w-full' src={example} alt="" />
-                </div>
-                <div className='flex items-center'>
-                  <div className='flex items-center'>
-                  <i className='fa fa-github'></i><h1>Repo</h1>
-
-                  </div>
-                  <button className='flex items-center'><i className='fa fa-heart'></i><h4>23k</h4></button>
-                </div>
-              </div>
-              )
+          
+            dataarray?.map((each)=>[
+              <DoctorCard key={each.id} drName={each.name} id={each._id} dremail={each.email} drimg={each.img} spealist={each.spesilist} location={each.location}/>
+        
+            ])
+          
           
           }
   
          </div>
-        </div>
       </div>
      </>
   
     )
 }
 
-export default Store
+export default Doctors

@@ -1,21 +1,21 @@
 import React, { useState, useRef, useEffect ,useContext} from 'react';
 import { Link } from 'react-router-dom';
-import logo from "../img/image 1.jpg"
+// import logo from "../img/image 1.jpg"
 import {GlobalContext}from '../context/context'
 import axios from 'axios';
-
+import imgholder from "../img/download.png"
 import css from "../css/Navcomponent.css"
 function Navcomponent({islogin , img  ,changeCss , theme}) {
  const {state , dispatch}= useContext(GlobalContext)
   const [isResponsiveNavOpen ,setisResponsiveNavOpen] =useState(false)
 
   changeCss = true
-
+ console.log(islogin)
   const navbarRef = useRef();
   const [scrolled , setScrolled] = useState()
  const logoutHandler = async(e)=>{
   try {
-   const res =await axios.get("user-logout")
+   const res =await axios.get("http://localhost:2344/user-logout")
    dispatch({
     type:'USER_LOGOUT'
    })
@@ -50,47 +50,25 @@ function Navcomponent({islogin , img  ,changeCss , theme}) {
     return (
       <nav 
       ref={navbarRef}
-      className={`fixed flex items-center justify-between px-[3%] py-[20px] w-full z-[1000] ${scrolled && 'shadow-[0px_4px_10px_#0000005c]'}
+      className={` flex items-center justify-between px-[3%] py-[20px] w-full
       
-      ${theme ? 'bg-gray-800 text-white' : changeCss ?  "bg-white text-black" : ' bg-[#0000001c] text-white'}`}>
-        <div className='flex items-center gap-[100px]'>
-            <div className='w-[60px] h-[60px] overflow-hidden rounded-full'>
-              <Link to='/'>
-          
-              <img className='w-full' src={logo} alt="" />
+      text-white`}>
 
-            
-
-              </Link>
-             
-            </div>
-            <ul className='flex items-center  gap-[30px] text-[18px] right-ul'>
-                <li className=''><Link to="/work" className='hover:text-violet-500 font-[600]'>PROJECTS</Link></li>
-                <li className='max-[600px]:hidden'><Link to='/article' className='hover:text-violet-500  font-[600]'>ARTICLES</Link></li>
-                <li className='max-[650px]:hidden'><Link to='/notes' className='hover:text-violet-500 font-[600]'>FREE NOTES</Link></li>
-                <li className='max-[700px]:hidden'><Link to="/hire-me" className='hover:text-violet-500 font-[600]'>HIRE ME</Link></li>
-            </ul>
-        </div>
         <div className='leftul'>
 <ul className='flex items-center gap-[30px]  text-[18px]'>
-  <li><button className='rounded-full w-[50px] h-[50px] p-[10px] flex justify-center items-center overflow-hidden bg-[##0000ff38]'
+  {/* <li><button className='rounded-full w-[50px] h-[50px] p-[10px] flex justify-center items-center overflow-hidden bg-[##0000ff38]'
   onClick={themeHandler}
 
   >
   <i className='bi bi-moon'>
 
   
-  </i></button></li>
-<li className=''><Link to='/' className='hover:text-violet-500 font-[600]'>ABOUT</Link></li>
-<li className=''><Link to='/' className='hover:text-violet-500 font-[600]'>CONTACT</Link></li>
-{ islogin ?
+  </i></button></li> */}
+<li className=''><Link to='/doctors' className='hover:text-violet-500 font-[600]'>Doctors</Link></li>
+{ islogin?.islogin ? 
   (<>
   <li className='text-[20px]'><button onClick={logoutHandler}>Logout</button></li>
-  {/* <Link to='/profile'>
-  <div className='w-[70px] h-[70px] overflow-hidden rounded-full'>
-  <img src={img || imgholder} className='' alt="" />
-  </div>
-  </Link> */}
+  
   </>)
 :
 (
@@ -131,26 +109,12 @@ onClick={()=>{
   setisResponsiveNavOpen(false)
 }}
 ><Link to='/work'>Projects</Link></li>
-        <li className='max-[650px]:block hidden'
-        onClick={()=>{
-          setisResponsiveNavOpen(false)
-        }}
-        ><Link to='/article' >Articles</Link></li>
-        <li className='max-[700px]:block hidden'
-        onClick={()=>{
-          setisResponsiveNavOpen(false)
-        }}
-        ><Link to='/notes'>Notes</Link></li>
-        <li className='max-[700px]:block hidden'
-        onClick={()=>{
-          setisResponsiveNavOpen(false)
-        }}
-        ><Link to='/hire-me'>Hire Me</Link></li>
+       
 <li className=''
 onClick={()=>{
   setisResponsiveNavOpen(false)
 }}
-><Link>ABOUT</Link></li>
+><Link to='/doctors'>Doctors</Link></li>
 <li className=''
 onClick={()=>{
   setisResponsiveNavOpen(false)
@@ -171,6 +135,24 @@ onClick={()=>{
 
 
 </ul>}
+       { islogin?.islogin === "Doctor" && 
+       <div className='flex items-center gap-[100px]'>
+          <div className='flex gap-[10px] items-center'>
+            <h1 className='text-2xl'><span className='text-sm'>Welcome</span> {islogin?.name}</h1>
+          <div className='w-[60px] h-[60px] overflow-hidden rounded-full'>
+              <Link to='/profile'>
+             
+              <img className='w-full' src={islogin?.img||imgholder} alt="" />
+
+            
+
+              </Link>
+             
+            </div>
+          </div>
+          
+        </div>}
+       
       </nav>
     )
 }

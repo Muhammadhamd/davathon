@@ -120,27 +120,27 @@ router.get("/posts",async(req ,res)=>{
     res.send(postsData)
 })
 
-router.get('/post/:postId', async (req, res) => {
+// router.get('/post/:postId', async (req, res) => {
 
-    const postID = req.params.postId
-    console.log(postID)
+//     const postID = req.params.postId
+//     console.log(postID)
 
-    const data = await col.findOne(
-        { 
-            ArticleUrl: postID }
+//     const data = await col.findOne(
+//         { 
+//             ArticleUrl: postID }
        
-      );
-      if(data){
-        res.send(data)
-        return
-      }
-      res.send('post not found')
-})
+//       );
+//       if(data){
+//         res.send(data)
+//         return
+//       }
+//       res.send('post not found')
+// })
 
-router.delete("/post/:postid",async(req,res)=>{
-    const postid = req.params.postid
-    const update =  await col.findOneAndDelete({_id:new ObjectId(postid)})
-    update ? res.send("post deleted") : res.send('error deleting post')
-})
+// router.delete("/post/:postid",async(req,res)=>{
+//     const postid = req.params.postid
+//     const update =  await col.findOneAndDelete({_id:new ObjectId(postid)})
+//     update ? res.send("post deleted") : res.send('error deleting post')
+// })
 
 export default router

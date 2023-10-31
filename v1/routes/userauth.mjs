@@ -5,14 +5,21 @@ import mongoose from "mongoose"
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken"
+import {  getStorage, ref, uploadBytes , getDownloadURL  } from "firebase/storage";
 const __dirname = path.resolve();
 const SECRET = process.env.SECRET || "topsecret";
 import {client} from "../../mongodb.mjs"
 import { ObjectId } from "mongodb"
-const db = client.db("Portfolio");
-const admincol = db.collection("user")
+const db = client.db("doctordb");
+import app from '../../firebaseconfig.mjs'
+const admincol = db.collection("accounts")
 import multer from 'multer'
-
+const upload = multer({
+  storage: multer.memoryStorage(), // Store files in memory
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit (adjust as needed)
+  },
+});
  function authenticateAdmin(req, res, next) {
   const token = req.cookies.Token; // Assuming you store the token in a cookie
   if (token) {
@@ -59,12 +66,18 @@ router.post("/userlogin", async (req, res) => {
         console.log("Password matches");
   
         const token = jwt.sign({
-          _id: data._id,
           email: data.email,
           name: data.name,
+          _id:data._id,
+          role:data.role,
+          img:data.imgUrl,
+          specialist:data.specialist,
+          location:data.location,
+          about:data.about,
+          schedule:data.schedules,
+
           iat: Math.floor(Date.now() / 1000) - 30,
           exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
-          isAdmin:false
       }, SECRET);
 
       // res.send(token);
@@ -83,7 +96,10 @@ router.post("/userlogin", async (req, res) => {
             email: data.email,
             name: data.name,
             _id:data._id,
-            isAdmin:false
+            role:data.role,
+            img:data.imgUrl,
+            specialist:data.specialist,
+            location:data.location
           }
         });
         return
@@ -96,15 +112,19 @@ router.post("/userlogin", async (req, res) => {
       res.status(500).send( "Login failed, please try later" );
     }
   });
-  router.post('/userregister',async (req, res) => {
-    const { password, email, name } = req.body;
+  router.post('/userregister',upload.single('ProfileImage'),async (req, res) => {
+    const { password, email, name , role , specialist , location} = req.body;
     if (!password || !email || !name) {
       return res.status(400).send('Required fields are missing.');
     }
   
     try {
   
+      const addImgDB = req?.file
+      let imgUrl = ''
   
+         
+
       
             
   
@@ -112,13 +132,31 @@ router.post("/userlogin", async (req, res) => {
       if (user) {
         return res.status(400).send('User already exists. Please use a different email.');
       } else {
-       
+        if (addImgDB) {
+          const name = +new Date() + "-" + addImgDB.originalname;
+          const metadata = {
+           contentType: addImgDB.mimetype
+          };
+          const storageRef = ref(getStorage(app), name)
+          
+          const task = uploadBytes(storageRef, addImgDB.buffer, metadata);
+          
+          
+          const snapshot = await task
+          
+          imgUrl =await getDownloadURL(snapshot.ref)
+                
+         }
   
         const hashedPassword = await bcrypt.hash(password, 10);
         const data = await admincol.insertOne({
           name,
           email,
           password: hashedPassword,
+          role:role,
+          specialist,
+          location,
+          imgUrl
         });
         console.log(data.email)
         // const token = jwt.sign({

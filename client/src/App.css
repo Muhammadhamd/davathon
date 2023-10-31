@@ -1,4 +1,4 @@
-.service-div{
+/* .service-div{
   background-image: url('./img/h2-bg-section-02.webp');
   background-repeat: no-repeat;
     background-size: 150%;
@@ -10,17 +10,17 @@
     background-size:cover;
 
     
-}
+} */
 
-.projectbg{
+/* .projectbg{
   background-image: url('./img/Rectangle\ 94.jpg');
  
   background-position-x: 743px;
-  background-repeat: no-repeat;
-  /* border: 6px solid #BC7AFF; */
+  background-repeat: no-repeat; */
+  /* border: 6px solid #BC7AFF;
   
 }
-
+/* 
 .contact-each-box:hover{
   color: white;
   background-color: #5333F2;
@@ -35,9 +35,9 @@
 
 .spin{
   animation: spin 1.4s ease-in infinite;
-}
+} */
 
-@keyframes spin{
+/* @keyframes spin{
 
   0%{
     rotate: 0deg;
@@ -48,4 +48,4 @@
   100%{
     rotate:0deg;
   }
-}
+} */

@@ -22,20 +22,7 @@ app.use(cors({
 
 
 app.use(apiv1)
-function authenticateUser(req, res, next) {
-    const token = req.cookies.Token; // Assuming you store the token in a cookie
-    if (token) {
-      // Verify and decode the token here (use your actual logic)
-      // For example, you can use the 'jsonwebtoken' library
-      const decodedData = jwt.verify(token, SECRET);
-  
-      if (decodedData) {
-        // If the token is valid, set the user data in the request object
-        req.body.decodedData = decodedData;
-      }
-    }
-    next();
-  }
+
 
 app.use(express.static(path.join(__dirname, 'client/build')))
 app.use(('/'),express.static(path.join(__dirname, 'client/build')))

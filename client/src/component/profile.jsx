@@ -1,286 +1,288 @@
 import React, { useState, useEffect, useRef } from "react";
-import Navcomponent from "./navbar";
 import axios from "axios";
-import imgprd from "../img/productjeans1.jpg";
+import imageholder from "../img/download.png"
 import { Link , useNavigate } from "react-router-dom";
 
-function Profile() {
-  const navigate = useNavigate()
-  const [isLogin, setIsLogin] = useState(false);
-  const dataarray = [25, 626, 62, 6, 74, 673, 6, 37, 45, 74];
-  const [data, setData] = useState([]);
-  const [selectedData, setSelectedData] = useState(null);
-  const [addressForm, setAddressForm] = useState(true);
-  const [addressData, setAddressData] = useState([]);
-  const [messageData, setMessageData] = useState([]);
-  const addresscityRef = useRef()
-  const addresscountryRef = useRef()
-  const messageRef = useRef()
-  const addressExectRef = useRef()
-  const userLoginCheckHandler = async() =>{
+function Profile({data}) {
+
+  const [editFormOpen , setEditFormOpen] = useState(false)
+  const [img , setImg] = useState()
+  const [image , setdpimage] = useState(imageholder)
+  const passwordref = useRef(null)
+  const emailref = useRef(null)
+  const nameref = useRef(null)
+  const roleref = useRef(null)
+  const [fitSchedule , setFitSchedule] = useState([])
+  const aboutref = useRef(null)
+ 
+  const specialistref = useRef(null)
+  const locationref = useRef(null)
+
+  const editHandler = (e)=>{
+
+  }
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [schedules, setSchedules] = useState([]);
+
+  const handleDayChange = (day) => {
+    console.log(selectedDays)
+    if (selectedDays.includes(day)) {
+      console.log(true)
+      setSelectedDays(selectedDays.filter((selectedDay) => selectedDay !== day));
+      setSchedules(schedules.filter((selectedDay) => selectedDay.day !== day));
+    } else {
+      setSelectedDays([...selectedDays, day]);
+      setSchedules([...schedules, { day, startTime: '', endTime: '' }]);
+    }
+  };
+
+  const handleTimingChange = (day, timeType, value) => {
+    const updatedSchedules = schedules.map((schedule) =>
+      schedule.day === day ? { ...schedule, [timeType]: value } : schedule
+    );
+    setSchedules(updatedSchedules);
+  }
+
+  const editSubmitHandler =async(e)=>{
+    e.preventDefault()
 
     try {
-      const res = await axios.get("/currentuser",{
-        withCredentials: true,
-      })
-      setIsLogin(true)
-      setData(res.data)
+      const formdata = new FormData()
+      const schedulesJSON = JSON.stringify(schedules);
+      formdata.append('email',emailref.current.value)
+      formdata.append('password',passwordref.current.value)
+      formdata.append('name',nameref.current.value)
+      formdata.append('role',"Doctor")
+      formdata.append('specialist',specialistref.current.value)
+      formdata.append('location',locationref.current.value)
+      formdata.append('ProfileImage',img)
+      formdata.append('about',aboutref.current.value)
+      formdata.append('sameimg',data.img)
+      formdata.append('schedules',schedulesJSON)
+      const res = await axios.put(`http://localhost:2344/update-profile`,formdata,{
+        withCredentials: true, // Use withCredentials instead of withCredential
+      }) 
+      console.log(res)
     } catch (error) {
-      setIsLogin(false)
-      navigate('/login')
+      console.log(error)
     }
   }
 
-  const SelectedHandler = (selected) => {
-    setSelectedData(selected);
-  };
+  function getNextDayOfWeek(dayOfWeek, numOccurrences) {
+    const today = new Date();
+    const occurrences = [];
+  
+    while (occurrences.length < numOccurrences) {
+      today.setDate(today.getDate() + 1); // Move to the next day
+      if (today.toLocaleDateString('en-US', { weekday: 'long' }) === dayOfWeek) {
+        // Check if the day matches the desired day of the week
+        occurrences.push({
+         date: new Date(today).getDate(),
+         day:dayOfWeek
+        }); // Store the date
+      }
+    }
+  
+    return occurrences;
+  }
+  
+
 
   useEffect(() => {
-    userLoginCheckHandler();
+    const updatedFitSchedule = data?.schedule
+      .map((each) => ({
+        day: each.day,
+        schedules: getNextDayOfWeek(each.day, 2), // Get the next 4 dates
+      }))
+      // Sort by the first date
+  
+    setFitSchedule(updatedFitSchedule);
+  }, []);
+useEffect(()=>{
+  console.log(fitSchedule)
 
-  }, [isLogin]);
+},[fitSchedule])
+
+
   useEffect(()=>{
-  },[addressData])
-  useEffect(()=>{
-  },[messageData])
-  return (
-    <div>
-      <Navcomponent islogin={isLogin} img={data.image} />
-      <div className="flex bg-[#f5f7f9]">
-        <div className="h-auto max-w-[300px] py-[15px] px-[40px] bg-[#1a52f3]">
-          <div className="w-full flex justify-center mt-[30px]">
-          <div className="overflow-hidden w-[110px] h-[110px] rounded-full">
-              <img src={data.image} alt="nodp" />
-          </div>
-          </div>
-          <div className="text-center">
-            <h1 className="font-semibold text-white text-2xl">{data.name}</h1>
-            <h3 className="text-base text-violet-50">{data.email}</h3>
-          </div>
-          <div></div>
-        </div>
-        <div className="flex flex-col ml-[20px]">
-          <div className="flex gap-[30px] mt-[40px]">
-            <div
-              style={{
-                backgroundColor: selectedData === "orders" ? "blue" : "white",
-                color: selectedData === "orders" ? "white" : "black",
-              }}
-              className={`shadow rounded-lg p-[20px] max-w-[300px] w-[400px]  h-[150px] flex flex-col justify-between`}
-              onClick={() => SelectedHandler("orders")}
-            >
-              <h1 className=" font-semibold mt-[10px] text-xl">Total Orders</h1>
-              <div>
-                <h1>This month <span>+5</span></h1>
-                <h1>+23</h1>
-              </div>
-            </div>
-            <div
-              style={{
-                backgroundColor: selectedData === "reviews" ? "blue" : "white",
-                color: selectedData === "reviews" ? "white" : "black",
-              }}
-              className={`shadow rounded-lg p-[20px] max-w-[300px] w-[400px]  h-[150px] flex flex-col justify-between`}
-              onClick={() => SelectedHandler("reviews")}
-            >
-              <h1 className=" font-semibold mt-[10px] text-xl">Your reviews</h1>
-              <div>
-                <h1>This month <span>+5</span></h1>
-                <h1>+23</h1>
-              </div>
-            </div>
-            <div
-              style={{
-                backgroundColor: selectedData === "messages" ? "blue" : "white",
-                color: selectedData === "messages" ? "white" : "black",
-              }}
-              className={`shadow rounded-lg p-[20px] max-w-[300px] w-[400px]  h-[150px] flex flex-col justify-between`}
-              onClick={() => SelectedHandler("messages")}
-            >
-              <h1 className=" font-semibold mt-[10px] text-xl">
-                Messages from Saler
-              </h1>
-              <div>
-                <h1>This month <span>+5</span></h1>
-                <h1>+23</h1>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-[30px] my-[40px]">
-            <div
-              className="shadow rounded-lg bg-white p-[20px]  w-full max-w-[630px]  h-[350px] flex flex-col "
-            >
-              <div className="md:mx-[20px] mt-[10px]">
-                <h1 className="text-xl font-semibold border-b pb-2">
-                  {selectedData}
-                </h1>
-              </div>
-              <div className="overflow-y-scroll">
-                { selectedData === "orders" ?
-                dataarray.map(() => (
-                  <div className="flex  w-full border-b p-[10px] items-center bg-white hover:bg-[#f9f9f9]">
-                    <img className="w-[60px]" src={imgprd} alt="" />
-                    <h1 className=" md:ml-[30px] max-w-[200px] w-full font-semibold">
-                      New Men's Jeanse
-                    </h1>
-                    <h3 className="md:ml-[30px] max-w-[60px] w-full ">4</h3>
-                    <h3 className="md:ml-[30px] max-w-[100px] w-full">$400</h3>
-                    <h1 className="font-semibold md:ml-[30px] max-w-[70px]">
-                      Pending
-                    </h1>
-                  </div>
-                ))
-             : selectedData === "reviews" ? 
-               dataarray.map(()=>[
-                <Link>
-                <div className="flex  w-full border-b p-[10px] items-center bg-white hover:bg-[#f9f9f9]">
-                   <img className="w-[60px]" src={imgprd} alt="" />
-                  <div className="md:ml-[30px] max-w-[400px]"> 
-                   <div className="text-slate-500 text-sm my-[2]"> 4 days ago</div>
-                  <h1 className="  w-full font-semibold">New Men's Jeanse
-                   </h1>
-                   <p>wooooowwww this product is really good i love it i will buy this.....</p>
-                  </div>
-                  <div>
-                   <button>
-                       <i className="fa fa-remove"></i>
-                   </button>
-                  </div>
-                 </div>
-               </Link>
-               ])
-             : selectedData === "messages" ?
-             <div >
-                <div className="h-[200px]">
+   console.log(schedules)
+  },[schedules,selectedDays])
+ return(
+  
+  <div className="mt-[60px]">
+    {/* className="bg-[black] absolute w-full h-[100vh] flex justify-center items-center" */}
+   { editFormOpen ? <div  className="bg-[black] w-full h-[100vh] flex justify-center items-center">
+      <form onSubmit={editSubmitHandler} className='w-full bg-white  p-[20px]'>
+      <div className='flex justify-center h-[80px] my-[10px] w-[80px]'>
+                    <img className='overflow-hidden rounded-full w-full' src={data.img || image} alt=""onClick={(e)=>{
+                      document.getElementById("inputimage").click()
+}} />
+                    <input type="file" id='inputimage' hidden onChange={(e)=>{
+                      setdpimage(URL.createObjectURL(e.target.files[0]))
+                      setImg(e.target.files[0])
+                    }
 
-               { messageData.map((message) => (
-  <div className={`flex my-4 mx-2 ${message.role === "admin" ? "justify-start" : "justify-end"}`}>
-    <h1 className={`rounded-[15px] p-[7px] shadow ${message.role === "admin" ? "bg-slate-200 text-black" : "bg-violet-300 text-white"}`}>
-      {message.message}
-    </h1>
-  </div>
-))}
-                  
+                    }
+                     />
                 </div>
-               <div className="flex justify-center"
-               onSubmit={(e)=>{
-                e.preventDefault()
-                 const newmessage = {
-                    role:"client",
-                    message:messageRef.current.value,
-                    timestamp:Date.now()
-                 }
-                  setMessageData([...messageData , newmessage])
-               }}
-               >
-               <form className="flex  md:w-[400px] w-full border my-[5px]">
-                <input type="text" className="px-6 py-2 outline-none w-full"  placeholder="write message here...."
-              ref={messageRef}
-              />
-              <input className="px-3 py-2 text-white bg-violet-500 font-semibolf" type="submit" value="send" />
-                </form>
-               </div>
-             </div>
-             : selectedData === 'notification' ?
-             <div></div>
-             : selectedData === "Address" ?
-           (addressForm && addressData.length ) ?
-              
-              <div className="flex gap-[15px] flex-wrap justify-center">
-                {( addressData?.map((data, index)=>[
-                <div className="shadow-lg rounded p-[15px] w-full max-w-[240px] ">
-                    <h1>{data.city|| 'karachi'} {data.country || "pakistan"}</h1>
-                    <p>{data.exect || "nagan chwrangi latif nagar north karachi 11-c-1  Plot R135"}</p>
-                    <button  key={index}
-                    onClick={()=>{
-                        const listcopy = [...addressData]
-                        listcopy.splice(index , 1)
-                        setAddressData(listcopy)
-                    }}
-                    >delete</button>
-                </div>
-               ]))}
-               <div>
-               <input type="submit" className="px-6 py-2 bg-violet-500 text-white font-semibold rounded shadow" value='Add Address' onClick={()=>{
-                setAddressForm(false)
-
-               }}/>
+                    
+                <input type="text" placeholder='Enter Your name'  className='px-4 py-3 rounded border w-full my-[7px] bg-[#0A86FF24] outline-none'
                 
-               </div>
-              </div>
-              :
-              <form className="p-[20px]"
-              onSubmit={(e)=>{
-                e.preventDefault()
-                if (!addresscityRef.current.value ||!addresscountryRef.current.value || !addressExectRef.current.value) {
-                    return
-                }
-                const newAddress ={
-                    city:addresscityRef.current.value,
-                    country:addresscountryRef.current.value,
-                    exect:addressExectRef.current.value
-                }
-                console.log(newAddress)
-                setAddressData([...addressData , newAddress])
-                setAddressForm(true)
-              }}
-              >
-              <input type="text" className="px-6 py-2 w-full border outline-none my-[5px]"  placeholder="Your country"
-              ref={addresscountryRef}
-              />
-              <input type="text" className="px-6 py-2 w-full border outline-none my-[5px]"  placeholder="Your City"
-              ref={addresscityRef}
-              />
-              <textarea className="px-6 py-2 w-full border outline-none my-[5px]" id=""
-              ref={addressExectRef}
-              ></textarea>
-              <input type="submit" className="px-6 py-2 bg-violet-500 text-white font-semibold rounded shadow" value='Add Address'
+                ref={nameref} defaultValue={data.name}
+                
+                />
+                <input type="email" placeholder='Enter new email'  className='px-4 py-3 rounded border w-full my-[7px] bg-[#0A86FF24] outline-none'
+               
+                ref={emailref} defaultValue={data.email}
+                
+                />
+                 <input type="text" placeholder='Enter Location'  className='px-4 py-3 rounded border w-full my-[7px] bg-[#0A86FF24] outline-none'
+               
+               ref={locationref} defaultValue={data.location}
                
                />
-             </form>
-             
-              : null
-              
-              }
+                <input type="text" placeholder='specialist in...'  className='px-4 py-3 rounded border w-full my-[7px] bg-[#0A86FF24] outline-none'
+               
+               ref={specialistref} defaultValue={data.specialist}
+               
+               />
+                <input type="password"  placeholder='Enter new password' className='px-4 py-3 rounded border w-full my-[7px] bg-[#0A86FF24] outline-none'
+                ref={passwordref} 
+                />
+                <textarea ref={aboutref}  className='px-4 py-3 rounded border w-full my-[7px] bg-[#0A86FF24] outline-none' name="" id="" cols="30" rows="6"></textarea>
+                
+                <div className=" text-slate-500">
+                  <h1>shedule</h1>
+                  {['Monday','Tuesday', 'Wednesday','Thursday', 'Friday','Saturday','Sunday'].map((day) => (
+          <div key={day}>
+            <label htmlFor={day}>{day}</label>
+            <input
+              type="checkbox"
+              name={day}
+              value={day}
+              id={day}
+              onChange={() => handleDayChange(day)}
+            />
+            {selectedDays.includes(day) && (
+              <div>
+                <label>Start Time</label>
+                <input
+                  type="time"
+                  onChange={(e) => handleTimingChange(day, 'startTime', e.target.value)}
+                />
+                <label>End Time</label>
+                <input
+                  type="time"
+                  onChange={(e) => handleTimingChange(day, 'endTime', e.target.value)}
+                />
               </div>
-            </div>
-            <div className="flex flex-col gap-[20px]">
-              <div
-                style={{
-                  backgroundColor:
-                    selectedData === "notification" ? "blue" : "white",
-                  color: selectedData === "notification" ? "white" : "black",
-                }}
-                className={`shadow rounded-lg p-[20px] max-w-[300px] w-[400px]  h-[150px] flex flex-col justify-between`}
-                onClick={() => SelectedHandler("notification")}
-              >
-                <h1 className=" font-semibold mt-[10px] text-xl">
-                  Notifications
-                </h1>
-                <div>
-                  <h1>This month <span>+5</span></h1>
-                  <h1>+23</h1>
-                </div>
-              </div>
-              <div
-                style={{
-                  backgroundColor: selectedData === "Address" ? "blue" : "white",
-                  color: selectedData === "Address" ? "white" : "black",
-                }}
-                className={`shadow rounded-lg p-[20px] max-w-[300px] w-[400px]  h-[150px] flex flex-col justify-between`}
-                onClick={() => SelectedHandler("Address")}
-              >
-                <h1 className=" font-semibold mt-[10px] text-xl">Your address</h1>
-                <div>
-                  <h1>This month <span>+5</span></h1>
-                  <h1>+23</h1>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
+        ))}
+   
+       
+                </div>
+                <input type="submit" />
+      </form>
+    </div>
+    :
+  <>
+  
+  <div className="flex justify-between">
+      <h1 className="flex items-center text-2xl font-bold">
+        <Link to="/">
+        <i className="fa fa-arrow"></i>
+        Back To Home
+        </Link>
+       
+      </h1>
+      <button 
+      onClick={()=>{
+        setEditFormOpen(true)
+      }}
+      >Edit</button>
+    </div>
+
+    <div className="flex flex-col items-center ">
+      <div className="w-[130px] h-[130px] rounded-xl overflow-hidden">
+        <img src={data.img || imageholder} alt="" />
+      </div>
+      <h1 className="text-[#263257] font-semibold text-2xl">{data.name || 'Muhammad Hamd'}</h1>
+      <h3 className="text-[##7D8BB7] text-sm">{data.specialist || 'Heart'} Specilist</h3>
+      <div className="bg-[#B28CFF] p-[20px] rounded-xl max-w-[500px] w-full flex gap-[20px] my-[50px]">
+        <div className="bg-white p-[20px] rounded-xl max-w-[130px] w-full">
+          <h1 className="text-[#B28CFF] text-2xl font-semibold">350+</h1>
+          <h3 className="text-[##7D8BB7] text-sm">Appoitment</h3>
+        </div>
+        <div className="bg-white p-[20px] rounded-xl max-w-[130px] w-full">
+          <h1 className="text-[#B28CFF] text-2xl font-semibold">350+</h1>
+          <h3 className="text-[##7D8BB7] text-sm">Appoitment</h3>
+        </div>
+        <div className="bg-white p-[20px] rounded-xl max-w-[130px] w-full">
+          <h1 className="text-[#B28CFF] text-2xl font-semibold">350+</h1>
+          <h3 className="text-[##7D8BB7] text-sm">Appoitment</h3>
         </div>
       </div>
-    </div>
+      <div className="max-w-[500px] w-full">
+        <h1 className="text-[#263257] font-semibold text-xl">About Doctor</h1>
+        <p className="text-sm text-slate-500">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet architecto inventore explicabo excepturi temporibus ducimus sint doloribus officia illo distinctio! Lorem ipsum dolor sit amet, consectetur adipisicing elit. Delectus voluptatem et omnis facere sit non?</p>
+      </div>
+     <div className="w-full max-w-[500px]">
+     <div className="flex items-center justify-between w-full">
+      <h1 className="text-[#263257] font-semibold text-xl">Shedule</h1>
+      <select name="" id="" className="text-sm">
+        <option value="">january</option>
+        <option value="">Febuary</option>
+        <option value="">March</option>
+        <option value="">April</option>
+        <option value="">May</option>
+        <option value="">June</option>
+        <option value="">July</option>
+        <option value="">August</option>
+        <option value="">September</option>
+        <option value="">Octuber</option>
+        <option value="">August</option>
+      </select>
+      </div>
+      <div className="mt-[50px] flex justify-between">
+      {fitSchedule
+    .map((daySchedule) =>
+      daySchedule.schedules.map((day) => (
+        <div className="flex flex-col items-center" key={day.date}>
+          <h1 className="font-semibold text-xl">{day.date}</h1>
+          <h1 className="text-slate-500 text-sm">{day.day}</h1>
+        </div>
+      ))
+    )
+   }
+        
+        
+      </div>
+     </div>
+     <div className="w-full max-w-[500px]">
+     <h1 className="text-[#263257] font-semibold text-xl">Visite hour</h1>
+     <div className="flex flex-wrap gap-[20px] my-[20px]">
+     <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
+     <h1 className="text-sm">11:00pm</h1>
+     </div>
+      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
+     <h1 className="text-sm">11:00pm</h1>
+     </div>
+      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
+     <h1 className="text-sm">11:00pm</h1>
+     </div>
+      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
+     <h1 className="text-sm">11:00pm</h1>
+     </div>
+      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
+     <h1 className="text-sm">11:00pm</h1>
+     </div>
+     
+     </div>
+     </div>
+    </div></>
+    }
+  </div>
   );
 }
 
