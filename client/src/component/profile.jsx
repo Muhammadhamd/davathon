@@ -8,6 +8,7 @@ function Profile({data}) {
   const [editFormOpen , setEditFormOpen] = useState(false)
   const [img , setImg] = useState()
   const [image , setdpimage] = useState(imageholder)
+  const [selectedDayTiming , setSelectedDayTiming] = useState()
   const passwordref = useRef(null)
   const emailref = useRef(null)
   const nameref = useRef(null)
@@ -68,51 +69,70 @@ function Profile({data}) {
     }
   }
 
-  function getNextDayOfWeek(dayOfWeek, numOccurrences) {
-    const today = new Date();
-    const occurrences = [];
-  
-    while (occurrences.length < numOccurrences) {
-      today.setDate(today.getDate() + 1); // Move to the next day
-      if (today.toLocaleDateString('en-US', { weekday: 'long' }) === dayOfWeek) {
-        // Check if the day matches the desired day of the week
-        occurrences.push({
-         date: new Date(today).getDate(),
-         day:dayOfWeek
-        }); // Store the date
-      }
-    }
-  
-    return occurrences;
-  }
-  
+ 
 
 
   useEffect(() => {
-    const updatedFitSchedule = data?.schedule?.map((each) => ({
-        day: each.day,
-        schedules: getNextDayOfWeek(each.day, 2), // Get the next 4 dates
-      }))
+  
       let nextDate = new Date();
       nextDate.setDate(nextDate.getDate() - 2); // Start two days before the current date
       
       const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      
-      for (let i = 0; i < 7; i++) {
-        let daysare = dayNames[nextDate.getDay()]
-        console.log(daysare)
+      let nineDays = []
+      for (let i = 0; i < 9; i++) {
+        let daysare = {
+          day:dayNames[nextDate.getDay()],
+          date:nextDate.getDate()
+        }
+        nineDays.push(daysare)
         nextDate.setDate(nextDate.getDate() + 1); // Increment the date by 1 day
       }
 
       // Sort by the first date
   
-    setFitSchedule(updatedFitSchedule);
+   
+      nineDays = nineDays
+      .filter((day) => data?.schedule?.some((each) => each.day === day.day))
+      .map((day) => {
+        const matchingSchedule = data?.schedule?.find((each) => each.day === day.day);
+    
+        // Use object destructuring to extract startTime and endTime
+        const { startTime, endTime } = matchingSchedule || {};
+    
+        return {
+          day: day.day,
+          date: day.date,
+          timing: { startTime: startTime || null, endTime: endTime || null },
+        };
+      });
+    setFitSchedule(nineDays);
+    
   }, []);
 useEffect(()=>{
   console.log(fitSchedule)
+  setSelectedDayTiming({
+    Start:fitSchedule.filter((each) => each.date === new Date().getDate())[0]?.timing.startTime,
+    end:fitSchedule.filter((each) => each.date === new Date().getDate())[0]?.timing.endTime
+  })
 
 },[fitSchedule])
+useEffect(()=>{
+  
+console.log(selectedDayTiming)
 
+if (selectedDayTiming && selectedDayTiming.Start && selectedDayTiming.end) {
+  const [startHour, startMinute] = selectedDayTiming?.Start?.split(":")?.map(Number);
+const [endHour, endMinute] = selectedDayTiming?.end?.split(":")?.map(Number);
+const startInMinutes = startHour * 60 + startMinute;
+const endInMinutes = endHour * 60 + endMinute;
+
+const timeDifferenceInHours = (endInMinutes - startInMinutes) / 60;
+console.log(timeDifferenceInHours)
+}
+
+
+
+},[selectedDayTiming])
 
   useEffect(()=>{
    console.log(schedules)
@@ -256,12 +276,12 @@ useEffect(()=>{
       </div>
       <div className="mt-[50px] flex justify-between">
       {fitSchedule?.map((daySchedule) =>
-      daySchedule.schedules.map((day) => (
-        <div className="flex flex-col items-center" key={day.date}>
-          <h1 className="font-semibold text-xl">{day.date}</h1>
-          <h1 className="text-slate-500 text-sm">{day.day}</h1>
+     
+        <div className={`flex p-[10px] flex-col items-center rounded ${new Date().getDate() === daySchedule.date ? "bg-violet-500 text-white":null}`} key={daySchedule.date}>
+          <h1 className="font-semibold text-xl">{daySchedule.date}</h1>
+          <h1 className="text-slate-500 text-sm">{daySchedule.day}</h1>
         </div>
-      ))
+      
     )
    }
         
