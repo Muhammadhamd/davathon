@@ -89,11 +89,21 @@ function Profile({data}) {
 
 
   useEffect(() => {
-    const updatedFitSchedule = data?.schedule
-      .map((each) => ({
+    const updatedFitSchedule = data?.schedule?.map((each) => ({
         day: each.day,
         schedules: getNextDayOfWeek(each.day, 2), // Get the next 4 dates
       }))
+      let nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() - 2); // Start two days before the current date
+      
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      
+      for (let i = 0; i < 7; i++) {
+        let daysare = dayNames[nextDate.getDay()]
+        console.log(daysare)
+        nextDate.setDate(nextDate.getDate() + 1); // Increment the date by 1 day
+      }
+
       // Sort by the first date
   
     setFitSchedule(updatedFitSchedule);
@@ -245,8 +255,7 @@ useEffect(()=>{
       </select>
       </div>
       <div className="mt-[50px] flex justify-between">
-      {fitSchedule
-    .map((daySchedule) =>
+      {fitSchedule?.map((daySchedule) =>
       daySchedule.schedules.map((day) => (
         <div className="flex flex-col items-center" key={day.date}>
           <h1 className="font-semibold text-xl">{day.date}</h1>
