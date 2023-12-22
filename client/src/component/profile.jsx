@@ -3,12 +3,16 @@ import axios from "axios";
 import imageholder from "../img/download.png"
 import { Link , useNavigate } from "react-router-dom";
 
+
+
+
 function Profile({data}) {
 
   const [editFormOpen , setEditFormOpen] = useState(false)
   const [img , setImg] = useState()
   const [image , setdpimage] = useState(imageholder)
   const [selectedDayTiming , setSelectedDayTiming] = useState()
+  const [timing , setTiming] = useState([])
   const passwordref = useRef(null)
   const emailref = useRef(null)
   const nameref = useRef(null)
@@ -28,7 +32,6 @@ function Profile({data}) {
   const handleDayChange = (day) => {
     console.log(selectedDays)
     if (selectedDays.includes(day)) {
-      console.log(true)
       setSelectedDays(selectedDays.filter((selectedDay) => selectedDay !== day));
       setSchedules(schedules.filter((selectedDay) => selectedDay.day !== day));
     } else {
@@ -108,17 +111,30 @@ function Profile({data}) {
     setFitSchedule(nineDays);
     
   }, []);
+  let DefaultDate = new Date()
 useEffect(()=>{
   console.log(fitSchedule)
-  setSelectedDayTiming({
-    Start:fitSchedule.filter((each) => each.date === new Date().getDate())[0]?.timing.startTime,
-    end:fitSchedule.filter((each) => each.date === new Date().getDate())[0]?.timing.endTime
-  })
+  if (!fitSchedule.filter((each)=>each?.date === DefaultDate.getDate()).length) {
+    console.log()
+    DefaultDate.setDate(DefaultDate.getDate() + (fitSchedule.find((each)=>each?.date > DefaultDate.getDate())?.date - DefaultDate.getDate()) )
+  }
 
+  setSelectedDayTiming({
+    Start:fitSchedule.filter((each) => each?.date === DefaultDate.getDate())[0]?.timing.startTime,
+    end:fitSchedule.filter((each) => each?.date === DefaultDate.getDate())[0]?.timing.endTime
+  })
 },[fitSchedule])
+  
+  const changeTheDate = (date) =>{
+    setSelectedDayTiming({
+      Start:fitSchedule.filter((each) => each.date === date)[0]?.timing.startTime,
+      end:fitSchedule.filter((each) => each.date === date)[0]?.timing.endTime
+    })
+  }
 useEffect(()=>{
   
 console.log(selectedDayTiming)
+
 
 if (selectedDayTiming && selectedDayTiming.Start && selectedDayTiming.end) {
   const [startHour, startMinute] = selectedDayTiming?.Start?.split(":")?.map(Number);
@@ -127,16 +143,28 @@ const startInMinutes = startHour * 60 + startMinute;
 const endInMinutes = endHour * 60 + endMinute;
 
 const timeDifferenceInHours = (endInMinutes - startInMinutes) / 60;
-console.log(timeDifferenceInHours)
+console.log(Math.floor(timeDifferenceInHours / 1))
+setTiming([])
+ for (let i = 0; i < Math.floor(timeDifferenceInHours / 1); i++) {
+  if ((startHour + i + i) <= endHour) {
+  console.log()
+    setTiming((timing)=>[...timing , (startHour + i + i)])
+  }
+  
+ }
 }
 
 
 
 },[selectedDayTiming])
+useEffect(()=>{
+console.log(timing)
+},[timing])
 
   useEffect(()=>{
    console.log(schedules)
   },[schedules,selectedDays])
+  
  return(
   
   <div className="mt-[60px]">
@@ -255,7 +283,8 @@ console.log(timeDifferenceInHours)
       </div>
       <div className="max-w-[500px] w-full">
         <h1 className="text-[#263257] font-semibold text-xl">About Doctor</h1>
-        <p className="text-sm text-slate-500">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet architecto inventore explicabo excepturi temporibus ducimus sint doloribus officia illo distinctio! Lorem ipsum dolor sit amet, consectetur adipisicing elit. Delectus voluptatem et omnis facere sit non?</p>
+        <p className="text-sm text-slate-500 my-4">
+        {data?.about || "  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet architecto inventore explicabo excepturi temporibus ducimus sint doloribus officia illo distinctio! Lorem ipsum dolor sit amet, consectetur adipisicing elit. Delectus voluptatem et omnis facere sit non?"}</p>
       </div>
      <div className="w-full max-w-[500px]">
      <div className="flex items-center justify-between w-full">
@@ -277,8 +306,8 @@ console.log(timeDifferenceInHours)
       <div className="mt-[50px] flex justify-between">
       {fitSchedule?.map((daySchedule) =>
      
-        <div className={`flex p-[10px] flex-col items-center rounded ${new Date().getDate() === daySchedule.date ? "bg-violet-500 text-white":null}`} key={daySchedule.date}>
-          <h1 className="font-semibold text-xl">{daySchedule.date}</h1>
+        <div className={`flex p-[10px] flex-col items-center rounded ${DefaultDate.getDate() === daySchedule.date ? "bg-violet-500 text-white":null}`} key={daySchedule.date}>
+          <h1 onClick={()=>{changeTheDate(daySchedule.date)}} className="font-semibold text-xl">{daySchedule.date}</h1>
           <h1 className="text-slate-500 text-sm">{daySchedule.day}</h1>
         </div>
       
@@ -291,21 +320,15 @@ console.log(timeDifferenceInHours)
      <div className="w-full max-w-[500px]">
      <h1 className="text-[#263257] font-semibold text-xl">Visite hour</h1>
      <div className="flex flex-wrap gap-[20px] my-[20px]">
-     <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
-     <h1 className="text-sm">11:00pm</h1>
+      {
+        timing?.length &&
+        timing.map((eachTime)=>[
+<div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px] hover:text-[white]">
+     <h1 className="text-sm">{eachTime > 12 ? eachTime - 12 : eachTime}{eachTime > 11 ? "PM" :"AM"}</h1>
      </div>
-      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
-     <h1 className="text-sm">11:00pm</h1>
-     </div>
-      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
-     <h1 className="text-sm">11:00pm</h1>
-     </div>
-      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
-     <h1 className="text-sm">11:00pm</h1>
-     </div>
-      <div className="rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px]">
-     <h1 className="text-sm">11:00pm</h1>
-     </div>
+        ])
+      }
+     
      
      </div>
      </div>
