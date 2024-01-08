@@ -17,6 +17,11 @@ const style = {
 };
 
 function DrProfile() {
+ let  months = [
+    "January", "February", "March", "April",
+    "May", "June", "July", "August",
+    "September", "October", "November", "December"
+]
 
     const drId = useParams().id
     console.log(drId)
@@ -53,15 +58,27 @@ function DrProfile() {
   const [appointment , setAppointment] = useState()
   const [appointmentData , setAppointmentData] = useState()
   const selectedMonthRef = useRef()
+  const PatientRef = useRef()
 
 
   // setAppointmentData({
-  //   year: new Date().getFullYear,
+  //   year: new Date().getFullYear(),
   // })
 
-  //   const SubmitAppointmentHandler = ()=>{
-
-  //   }
+    const SubmitAppointmentHandler = async(e)=>{
+      e.preventDefault()
+      try {
+        const res = axios.post("http://localhost:2344/add-appointment/",{
+          DoctorId:drId,
+          appointmentSchedule:appointmentData,
+          patientAbout:PatientRef.current.value
+        },{withCredentials:true})
+          
+         console.log(res)
+      } catch (error) {
+        
+      }
+    }
   useEffect(() => {
    console.log( data?.schedules )
       let nextDate = new Date();
@@ -73,7 +90,9 @@ function DrProfile() {
       for (let i = 0; i < 9; i++) {
         let daysare = {
           day:dayNames[nextDate.getDay()],
-          date:nextDate.getDate()
+          date:nextDate.getDate(),
+          year:nextDate.getFullYear(),
+          month:nextDate.getMonth(),
         }
         nineDays.push(daysare)
         nextDate.setDate(nextDate.getDate() + 1); // Increment the date by 1 day
@@ -93,6 +112,8 @@ function DrProfile() {
         return {
           day: day.day, 
           date: day.date,
+          year:day.year,
+          month:day.month,
           timing: { startTime: startTime || null, endTime: endTime || null },
         };
       });
@@ -100,11 +121,32 @@ function DrProfile() {
     
   }, [data]);
   
+  useEffect(()=>{
+  console.log(fitSchedule)
+  },[fitSchedule])
   useEffect(() => {
   
     if (!fitSchedule.some((each) => each?.date === DefaultDateRef.current.getDate())) {
       if (fitSchedule.find((each) => each?.date > DefaultDateRef.current.getDate())?.date) {
         DefaultDateRef.current.setDate(DefaultDateRef.current.getDate() + (fitSchedule.find((each) => each?.date > DefaultDateRef.current.getDate())?.date - DefaultDateRef.current.getDate()));
+       
+        setAppointmentData(
+          {
+            year:DefaultDateRef.current.getFullYear(),
+            month:DefaultDateRef.current.getMonth(),
+            date:DefaultDateRef.current.getDate(),
+            timing:null
+           }
+       )
+      }else{
+        setAppointmentData(
+          {
+            year:DefaultDateRef.current.getFullYear(),
+            month:DefaultDateRef.current.getMonth(),
+            date:DefaultDateRef.current.getDate(),
+            timing:null
+           }
+       )
       }
     }
   
@@ -117,18 +159,25 @@ function DrProfile() {
   }, [fitSchedule]);
 
   
-  const changeTheDate = (date) =>{
-    console.log(date)
+  const changeTheDate = (date , year , month) =>{
+    setAppointment(false)
+    console.log(date , year , month)
     DefaultDateRef.current.setDate(DefaultDateRef.current.getDate() + (date - DefaultDateRef.current.getDate() ))
     setSelectedDayTiming({
       Start:fitSchedule.filter((each) => each.date === date)[0]?.timing.startTime,
       end:fitSchedule.filter((each) => each.date === date)[0]?.timing.endTime
     })
+    console.log(appointmentData)
+      setAppointmentData(
+        {
+          year,
+          month:months[month],
+          date,
+          timing:null
+         }
+     )
     
-  setAppointmentData({
-    year: new Date().getFullYear(),
-
-  })
+  
   }
 useEffect(()=>{
   
@@ -159,9 +208,10 @@ useEffect(()=>{
 console.log(timing)
 },[timing])
 
-console.log(DefaultDateRef.current.getDate())
   
-  
+  useEffect(()=>{
+ console.log(appointmentData)
+  },[appointmentData])
  return(
   
   <div className="mt-[60px]">
@@ -217,7 +267,7 @@ console.log(DefaultDateRef.current.getDate())
       {fitSchedule?.map((daySchedule) =>
      
         <div className={`flex p-[10px] flex-col items-center rounded ${DefaultDateRef.current.getDate() === daySchedule.date ? "bg-violet-500 text-white":null}`} key={daySchedule.date}>
-          <h1 onClick={()=>{changeTheDate(daySchedule.date)}} className="font-semibold text-xl">{daySchedule.date}</h1>
+          <h1 onClick={()=>{changeTheDate(daySchedule.date , daySchedule.year , daySchedule.month)}} className="font-semibold text-xl">{daySchedule.date}</h1>
           <h1 className="text-slate-500 text-sm">{daySchedule.day}</h1>
         </div>
       
@@ -233,7 +283,15 @@ console.log(DefaultDateRef.current.getDate())
       {
         timing?.length &&
         timing.map((eachTime)=>[
-<div className={`rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px] hover:text-[white] ${appointment == eachTime && 'bg-[#B28CFF] text-[white]'}`} onClick={()=>{setAppointment(eachTime)}}>
+<div className={`rounded-xl px-6 py-4 hover:bg-[#B28CFF] max-w-[100px] hover:text-[white] ${appointment == eachTime && 'bg-[#B28CFF] text-[white]'}`} onClick={()=>{
+  setAppointment(eachTime)
+  setAppointmentData({
+    year:appointmentData.year,
+    month:appointmentData.month,
+    date:appointmentData.date,
+    timing:eachTime
+  })
+  }}>
      <h1 className={`text-sm `}>{eachTime > 12 ? eachTime - 12 : eachTime}{eachTime > 11 ? "PM" :"AM"}</h1>
      </div>
         ])
@@ -261,19 +319,19 @@ console.log(DefaultDateRef.current.getDate())
       >
         <Fade in={open}>
           <div style={style} className="bg-white text-[16px] max-w-[600px] w-full rounded p-[20px] ">
-           <form action="" className="w-full">
-            <h1 className="text-gray-400 mb-4">You are applying for Appointment for <span className="font-semibold">Dec/19/2023</span></h1>
+           <form onSubmit={SubmitAppointmentHandler} className="w-full">
+            <h1 className="text-gray-400 mb-4">You are applying for Appointment for <span className="font-semibold">{appointmentData?.month}/{appointmentData?.date}/{appointmentData?.year} - {appointmentData?.timing > 12 ? appointmentData?.timing - 12 : appointmentData?.timing} {appointmentData?.timing > 11 ? "PM" :"AM"} </span></h1>
 
-            <textarea name="" id="" className=" border rounded p-4 w-full text-sm outline-none " rows="5" placeholder="Write a note about your case so it help the Doctor to identify your Problem..."></textarea>
+            <textarea ref={PatientRef} className=" border rounded p-4 w-full text-sm outline-none " rows="5" placeholder="Write a note about your case so it help the Doctor to identify your Problem..."></textarea>
             <ul className="text-sm text-gray-400 flex flex-col gap-[5px] my-2">
               <li className="">
-                Timing: <span>11 PM</span>
+                Timing: <span>{appointmentData?.timing > 12 ? appointmentData?.timing - 12 : appointmentData?.timing} {appointmentData?.timing > 11 ? "PM" :"AM"}</span>
               </li>
               <li className="">
-                date: <span>Dec/12/2023</span>
+                date: <span>{appointmentData?.month}/{appointmentData?.date}/{appointmentData?.year}</span>
               </li>
               <li className="">
-                Doctor: <span>Dr.Faraz</span>
+                Doctor: <span>{data?.name}</span>
               </li>
               <li className="">
                 Fees: <span>Rs 1500</span>
