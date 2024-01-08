@@ -161,6 +161,18 @@ console.log(timing)
 
 console.log(DefaultDateRef.current.getDate())
   
+
+const setAppointmentHandler = async() =>{
+
+  try {
+    const res = await axios.post("/get-appointment",{
+      doctorId:drId,
+      authorMsg:
+    },{withCredentials:true})
+  } catch (error) {
+    
+  }
+}
   
  return(
   

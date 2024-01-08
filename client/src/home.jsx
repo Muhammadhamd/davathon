@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import style from './App.css'
 import { useParams , Link } from 'react-router-dom';
 
@@ -6,9 +6,10 @@ import axios, { toFormData } from 'axios';
 import Navcomponent from './component/navbar';
 import DoctorCard from './component/post';
 import icon from "./img/icon.png"
+import { GlobalContext } from './context/context';
 
 function Home({theme , islogin ,name , img}) {
-
+ const {state} = useContext(GlobalContext)
 
 
   const [dataarray , setdataarray] = useState([])
@@ -46,7 +47,7 @@ useEffect(()=>{
   <Navcomponent  islogin={data} />
 
     <div className='mx-[4%] py-[50px]'>
-    <h3 className='text-white font-semibold text-3xl leading-[44.5px] '>Welcome bacK</h3>
+    <h3 className='text-white font-semibold text-3xl leading-[44.5px] '>Welcome back {state?.user?.role === "Patient" && state?.user?.name }</h3>
     <h1 className='text-white max-[600px]:text-5xl max-[600px]:my-[20px]   font-semibold text-7xl leading-[84.5px] md:mb-[60px]'>Lets Find <br /> Your Top Docuter</h1>
     <h1 className='text-white max-[600px]:text-5xl  max-[600px]:my-[20px] font-semibold text-7xl leading-[44.5px]'>Docter Inn</h1>
     </div>

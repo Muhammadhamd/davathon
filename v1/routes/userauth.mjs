@@ -63,46 +63,78 @@ router.post("/userlogin", async (req, res) => {
       const isMatch = await bcrypt.compare(password, data.password);
   
       if (isMatch) {
-        console.log("Password matches");
-  
-        const token = jwt.sign({
-          email: data.email,
-          name: data.name,
-          _id:data._id,
-          role:data.role,
-          img:data.imgUrl,
-          specialist:data.specialist,
-          location:data.location,
-          about:data.about,
-          schedule:data.schedules,
 
-          iat: Math.floor(Date.now() / 1000) - 30,
-          exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
-      }, SECRET);
-
-      // res.send(token);
-
-      res.cookie('Token', token, {
-          maxAge: 86_400_000,
-          httpOnly: true,
-          // sameSite: true,
-          // secure: true
-      });
-      // Cookies.set("username", "john", { expires: 7, path: "/" });
-        // console.log(req.cookies.Token)
-        res.send({
-          message:'login sucessfully',
-          data:{
+        if (data?.role === "Doctor") {
+          const token = jwt.sign({
             email: data.email,
             name: data.name,
             _id:data._id,
             role:data.role,
             img:data.imgUrl,
             specialist:data.specialist,
-            location:data.location
-          }
+            location:data.location,
+            about:data.about,
+            schedule:data.schedules,
+  
+            iat: Math.floor(Date.now() / 1000) - 30,
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
+        }, SECRET);
+  
+  
+        res.cookie('Token', token, {
+            maxAge: 86_400_000,
+            httpOnly: true,
+            // sameSite: true,
+            // secure: true
         });
-        return
+       
+          res.send({
+            message:'login sucessfully',
+            data:{
+              email: data.email,
+            name: data.name,
+            _id:data._id,
+            role:data.role,
+            img:data.imgUrl,
+            specialist:data.specialist,
+            location:data.location,
+            about:data.about,
+            schedule:data.schedules,
+            }
+          });
+          return
+        }
+        if (data?.role === "Patient") {
+          const token = jwt.sign({
+            email: data.email,
+            name: data.name,
+            _id:data._id,
+            role:data.role,
+  
+            iat: Math.floor(Date.now() / 1000) - 30,
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
+        }, SECRET);
+  
+  
+        res.cookie('Token', token, {
+            maxAge: 86_400_000,
+            httpOnly: true,
+            // sameSite: true,
+            // secure: true
+        });
+       
+          res.send({
+            message:'login sucessfully',
+            data:{
+              email: data.email,
+            name: data.name,
+            _id:data._id,
+            role:data.role,
+            }
+          });
+          return
+        }
+      
       } else {
         console.log("Password did not match");
         return res.status(401).send("Incorrect password" );
@@ -114,12 +146,12 @@ router.post("/userlogin", async (req, res) => {
   });
   router.post('/userregister',upload.single('ProfileImage'),async (req, res) => {
     const { password, email, name , role , specialist , location} = req.body;
-    if (!password || !email || !name) {
+    if (!password || !email || !name || !role) {
       return res.status(400).send('Required fields are missing.');
     }
   
     try {
-  
+     console.log(role)
       const addImgDB = req?.file
       let imgUrl = ''
   
@@ -149,36 +181,70 @@ router.post("/userlogin", async (req, res) => {
          }
   
         const hashedPassword = await bcrypt.hash(password, 10);
-        const data = await admincol.insertOne({
-          name,
-          email,
-          password: hashedPassword,
-          role:role,
-          specialist,
-          location,
-          imgUrl
-        });
-        console.log(data.email)
-        // const token = jwt.sign({
-        //   _id: data._id,
-        //   email: data.email,
-        //   name:data.name,
-        //   image:data.profileImage,
-        //   iat: Date.now() / 1000 - 30,
-        //   exp: Date.now() / 1000 + (60 * 60 * 48),
-        // }, SECRET);
-  
-        // res.cookie('Token', token, {
-        //   maxAge: 86_400_000,
-        //   httpOnly: true,
-        // });
-  
-        res.send({
-          message:'user logedin',
-          data:{
-            fgss:"hewr"
-          }
-        })
+        if (role === "Doctor") {
+          const data = await admincol.insertOne({
+            name,
+            email,
+            password: hashedPassword,
+            role:role,
+            specialist,
+            location,
+            imgUrl
+          });
+          // const token = jwt.sign({
+          //   _id: data._id,
+          //   email: data.email,
+          //   name:data.name,
+          //   image:data.profileImage,
+          //   iat: Date.now() / 1000 - 30,
+          //   exp: Date.now() / 1000 + (60 * 60 * 48),
+          // }, SECRET);
+    
+          // res.cookie('Token', token, {
+          //   maxAge: 86_400_000,
+          //   httpOnly: true,
+          // });
+    
+          res.send({
+            message:'user logedin',
+            data:{
+              data:data.ops[0]
+            }
+          })
+          return
+        }
+        if (role === "Patient") {
+          const data = await admincol.insertOne({
+            name,
+            email,
+            password: hashedPassword,
+            role:role,
+            // imgUrl
+          });
+          // const token = jwt.sign({
+          //   _id: data._id,
+          //   email: data.email,
+          //   name:data.name,
+          //   image:data.profileImage,
+          //   iat: Date.now() / 1000 - 30,
+          //   exp: Date.now() / 1000 + (60 * 60 * 48),
+          // }, SECRET);
+    
+          // res.cookie('Token', token, {
+          //   maxAge: 86_400_000,
+          //   httpOnly: true,
+          // });
+    
+          res.send({
+            message:'user logedin',
+            data:{
+              data:data
+            }
+          })
+          console.log(data)
+          return
+        }
+        
       }
     } catch (error) {
       console.error('Error during user registration:', error);

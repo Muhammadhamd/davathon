@@ -105,44 +105,37 @@ try {
             imgUrl =await getDownloadURL(snapshot.ref)
                   
            }
-           console.log({
-            name,
-            email,
-            role,
-            specialist,
-            location,
-            schedules,
-            about,
-            imgUrl:imgUrl || sameimg
-           })
-          const updated = await col.updateOne(
+         
+           const updated = await col.findOneAndUpdate(
             {
-              _id:new ObjectId(req?.body?.decodedData?._id)
-           }
-           ,{
-            $set:{
-            name,
-            email,
-            role,
-            specialist,
-            location,
-            schedules,
-            about,
-            imgUrl:imgUrl || sameimg
-           }
-        }
-           )
+                _id: new ObjectId(req?.body?.decodedData?._id)
+            },
+            {
+                $set: {
+                    name,
+                    email,
+                    role,
+                    specialist,
+                    location,
+                    schedules,
+                    about,
+                    imgUrl: imgUrl || sameimg
+                }
+            },
+            { returnDocument: "after" }
+        );
+        
            console.log(updated)
            const token = jwt.sign({
-            email: data.email,
-            name: data.name,
-            _id:data._id,
-            role:data.role,
-            img:data.imgUrl,
-            specialist:data.specialist,
-            location:data.location,
-            about:data.about,
-            schedule:data.schedule,
+            email: data.value.email,
+            name: data.value.name,
+            _id:data.value._id,
+            role:data.value.role,
+            img:data.value.imgUrl,
+            specialist:data.value.specialist,
+            location:data.value.location,
+            about:data.value.about,
+            schedule:data.value.schedule,
   
             iat: Math.floor(Date.now() / 1000) - 30,
             exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
@@ -154,7 +147,7 @@ try {
             // secure: true
         });
 
-        res.send("your changes hase been saved suceefully")
+        res.send({message:"your changes hase been saved suceefully",data:data.value})
        }
 
 } catch (error) {

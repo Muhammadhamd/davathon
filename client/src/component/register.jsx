@@ -12,7 +12,7 @@ function UserRegister(){
     const [img , setImg] = useState()
     const specialistref = useRef(null)
     const locationref = useRef(null)
-    
+    const [role , setrole] = useState(null)
     const navigate =  useNavigate()
     const submitHandler = async(e)=>{
         e.preventDefault();
@@ -24,7 +24,7 @@ console.log('eee')
           formdata.append('email',emailref.current.value)
           formdata.append('password',passwordref.current.value)
           formdata.append('name',nameref.current.value)
-          formdata.append('role',roleref.current.value)
+          formdata.append('role',role)
           formdata.append('specialist',specialistref.current.value)
           formdata.append('location',locationref.current.value)
           formdata.append('ProfileImage',img)
@@ -52,6 +52,9 @@ console.log('eee')
           console.error(error);
         }
       };
+      useEffect(()=>{
+        console.log(role)
+      },[role])
       
     return(
         <>
@@ -106,10 +109,10 @@ console.log('eee')
                 
                   <div className='flex gap-[10px] my-[10px]'>
                  <label htmlFor="" className='text-[#747474]'>
-                 <input type="radio" value="Patient" ref={roleref} name='role' /> Patinet
+                 <input type="radio" value="Patient" ref={roleref} onChange={()=>{setrole("Patient")}} name='role' /> Patinet
                  </label>
                  <label htmlFor=""  className='text-[#747474]'>
-                 <input type="radio" value="Doctor" ref={roleref} name='role' /> Docter
+                 <input type="radio" value="Doctor" ref={roleref} onChange={()=>{setrole("Doctor")}} name='role' /> Docter
                  </label>
                 </div>
                 <div className='flex gap-[5px] w-full items-center my-[30px]'>

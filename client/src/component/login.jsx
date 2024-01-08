@@ -32,7 +32,7 @@ function UserLogin(){
            
             dispatch({
               type: "USER_LOGIN",
-              payload: res.data,
+              payload: res?.data?.data,
             });
             history("/Profile")
 

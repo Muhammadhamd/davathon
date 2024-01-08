@@ -25,9 +25,10 @@ const db = client.db("userdatabase"),
           }else{
             req.body.decodedData = decodedData;
             console.log(decodedData)
+        next();
+
           }
         }
-        next();
       }
     //   AdminToken
 router.get("/currentuser", authenticateUser, async(req,res)=>{
