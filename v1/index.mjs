@@ -5,8 +5,10 @@ import userRouter from "./routes/user.mjs"
 import authRouter from "./routes/auth.mjs"
 import userauthRouter from "./routes/userauth.mjs"
 import doctorProfiles from './routes/profile.mjs'
+import addAppointment from './routes/addAppointment.mjs'
 const router = express.Router()
 
+router.use(addAppointment)
 router.use(postRouter)
 router.use(doctorProfiles)
 router.use(projectRouter)
